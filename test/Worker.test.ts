@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
 import { fromApiToken } from "@distilled.cloud/cloudflare/Credentials";
 import { havePropsChanged } from "alchemy/Diff";
-import { InstanceId } from "alchemy/InstanceId";
+import { ResourceContext } from "alchemy/ResourceContext";
 import { Stack } from "alchemy/Stack";
 import { Stage } from "alchemy/Stage";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as Redacted from "effect/Redacted";
 import * as Schema from "effect/Schema";
 import * as HttpClient from "effect/http/HttpClient";
 import type * as HttpClientRequest from "effect/http/HttpClientRequest";
@@ -42,7 +43,7 @@ const output: WorkerAttributes = {
 const serve = (status: number, body: unknown) => {
   const requests: HttpClientRequest.HttpClientRequest[] = [];
   const layer = Layer.mergeAll(
-    fromApiToken({ apiToken: "test-token" }),
+    fromApiToken({ apiToken: Redacted.make("test-token") }),
     Layer.succeed(
       HttpClient.HttpClient,
       HttpClient.make((request) => {
@@ -273,7 +274,12 @@ describe("physicalWorkerName", () => {
           actions: {},
         }),
         Effect.provideService(Stage, stage),
-        Effect.provideService(InstanceId, instanceId),
+        Effect.provideService(ResourceContext, {
+          logicalId: id,
+          fqn: id,
+          instanceId,
+          type: "WorkersBuilds.Worker",
+        }),
       ),
     );
 

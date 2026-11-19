@@ -420,7 +420,7 @@ describe("triggerAttributes", () => {
       triggerAttributes([
         {
           triggerUuid: "b595a215-7b9b-4a04-a55d-578f39ca4335",
-          repoConnection: { repoConnectionUuid: "c1", repoId: "1358278395" },
+          repoConnection: { repoConnectionUuid: "c1" },
         },
         { triggerUuid: "0d1e2f3a-0000-4000-8000-000000000000", deletedOn: "2026-10-01T00:00:00Z" },
         { triggerUuid: "a0000000-0000-4000-8000-000000000000", repoConnection: null },
@@ -663,7 +663,9 @@ describe("resolveBuildToken", () => {
   const resolve = (
     server: ReturnType<typeof serve>,
     buildToken: string | undefined,
-    credentials: Layer.Layer<Credentials> = fromApiToken({ apiToken: "test-token" }),
+    credentials: Layer.Layer<Credentials> = fromApiToken({
+      apiToken: Redacted.make("test-token"),
+    }),
   ) =>
     resolveBuildToken(accountId, buildToken).pipe(
       Effect.provideService(HttpClient.HttpClient, server.client),
@@ -725,7 +727,7 @@ describe("resolveBuildToken", () => {
     const server = cloudflare([]);
     const oauth = Layer.succeed(
       Credentials,
-      Effect.succeed(oauthCredentials({ accessToken: "test-oauth-token" })),
+      Effect.succeed(oauthCredentials({ accessToken: Redacted.make("test-oauth-token") })),
     );
     const error = await Effect.runPromise(Effect.flip(resolve(server, undefined, oauth)));
     expect(error).toBeInstanceOf(WorkersBuildsError);

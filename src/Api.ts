@@ -6,8 +6,8 @@
 // the fields it receives, and its secret list type requires a `text` that the
 // API never returns. Those calls go through `cloudflareRequest` with the
 // same credentials and the same HTTP client.
+import { CloudflareEnvironment } from "@alchemy.run/cloudflare";
 import { Credentials, formatHeaders } from "@distilled.cloud/cloudflare/Credentials";
-import { CloudflareEnvironment } from "alchemy/Cloudflare";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";

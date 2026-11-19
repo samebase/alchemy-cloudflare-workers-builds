@@ -5,7 +5,7 @@
 repository. Use them when the repository's `wrangler.jsonc` defines the Worker and Cloudflare
 builds each commit.
 
-The package adds only what the built-in `alchemy/Cloudflare` provider does not have:
+The package adds only what Alchemy's `@alchemy.run/cloudflare` provider does not have:
 
 - `WorkersBuilds.Worker`: a Worker that exists without code.
 - `WorkersBuilds.Repository`: the Workers Builds configuration that links a GitHub repository to
@@ -14,7 +14,7 @@ The package adds only what the built-in `alchemy/Cloudflare` provider does not h
 
 This is a community provider, maintained by [Samebase](https://samebase.com).
 
-Status: 0.5, pinned to `alchemy@2.0.0-beta.80` and Effect 4. Alchemy ships breaking changes
+Status: 0.6, pinned to `alchemy@2.0.0-beta.87` and Effect 4.1. Alchemy ships breaking changes
 between betas. Upgrade this package and Alchemy together.
 
 ## Ownership rule
@@ -41,7 +41,7 @@ two never write different values.
 ## Install
 
 ```sh
-pnpm add -D @samebase/alchemy-cloudflare-workers-builds alchemy@2.0.0-beta.80 effect@^4.0.0 @effect/platform-node@^4.0.0
+pnpm add -D @samebase/alchemy-cloudflare-workers-builds alchemy@2.0.0-beta.87 @alchemy.run/cloudflare@2.0.0-beta.87 @alchemy.run/github@2.0.0-beta.87 effect@^4.1.4 @effect/platform-node@^4.1.4
 ```
 
 ## Credentials
@@ -79,8 +79,8 @@ The Cloudflare Workers and Pages GitHub App must have access to the repository. 
 ## Example
 
 ```ts
+import * as Cloudflare from "@alchemy.run/cloudflare";
 import * as Alchemy from "alchemy";
-import * as Cloudflare from "alchemy/Cloudflare";
 import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -126,7 +126,7 @@ branch.
 
 `WorkersBuilds.Repository` then uses the repository of the run, in this order:
 
-1. In GitHub Actions, `GITHUB_REPOSITORY`, through Alchemy's `GitHubEnv` from `alchemy/GitHub`.
+1. In GitHub Actions, `GITHUB_REPOSITORY`, through Alchemy's `GitHubEnv` from `@alchemy.run/github`.
 2. Else the `origin` remote of the current directory (`git remote get-url origin`), in the form
    `https://github.com/<owner>/<name>` or `git@github.com:<owner>/<name>`, with or without `.git`.
 
