@@ -7,6 +7,7 @@
 // cloudflare/workers_workers_get.json, and each GitHub repository from
 // github/repos_get.json.
 import { readFileSync } from "node:fs";
+import { CloudflareEnvironment } from "@alchemy.run/cloudflare";
 import { fromApiToken } from "@distilled.cloud/cloudflare/Credentials";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
@@ -16,9 +17,8 @@ import { AlchemyContext } from "alchemy/AlchemyContext";
 import { apply } from "alchemy/Apply";
 import { provideFreshArtifactStore } from "alchemy/Artifacts";
 import { AuthProviders } from "alchemy/Auth/AuthProvider";
-import { CredentialsStore } from "alchemy/Auth/Credentials";
+import { CredentialsStore, type CredentialsStoreService } from "alchemy/Auth/Credentials";
 import { ProfileStore } from "alchemy/Auth/Profile";
-import { CloudflareEnvironment } from "alchemy/Cloudflare";
 import * as Drift from "alchemy/Drift";
 import * as Interaction from "alchemy/Interaction";
 import * as Plan from "alchemy/Plan";
@@ -459,12 +459,24 @@ const git = (stdout: () => string) =>
     ),
   );
 
+/**
+ * A credential store that fails loudly when something calls it. `scoped` is
+ * not an Effect, so `Layer.mock` cannot leave it out.
+ */
+const unusedCredentialsStore: CredentialsStoreService = {
+  read: () => Effect.die("CredentialsStore.read is not used in tests"),
+  write: () => Effect.die("CredentialsStore.write is not used in tests"),
+  delete: () => Effect.die("CredentialsStore.delete is not used in tests"),
+  deleteProfile: () => Effect.die("CredentialsStore.deleteProfile is not used in tests"),
+  scoped: () => unusedCredentialsStore,
+};
+
 /** The package's providers with fixed test credentials instead of Alchemy's login. */
 const providers = Layer.effect(Providers, Provider.collection([Worker, Repository, Secret])).pipe(
   Layer.provide(Layer.mergeAll(WorkerProvider(), RepositoryProvider(), SecretProvider())),
   Layer.provideMerge(
     Layer.mergeAll(
-      fromApiToken({ apiToken: "test-token" }),
+      fromApiToken({ apiToken: Redacted.make("test-token") }),
       Layer.succeed(
         CloudflareEnvironment,
         Effect.succeed({
@@ -512,7 +524,7 @@ export const engine = (api: FakeApi, remote: { origin: string } = { origin: "" }
     // the user's Alchemy login. The tests use fixed credentials, and a mock
     // fails loudly when something calls one.
     Layer.mock(ProfileStore, {}),
-    Layer.mock(CredentialsStore, {}),
+    Layer.succeed(CredentialsStore, unusedCredentialsStore),
   );
 
   /** The context of a drift check: the state, the providers, and the stack. */

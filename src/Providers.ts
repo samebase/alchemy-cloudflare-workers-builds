@@ -1,7 +1,7 @@
 // The provider collection users merge into a stack:
 //   providers: Layer.mergeAll(Cloudflare.providers(), WorkersBuilds.providers())
+import { CloudflareApiLive } from "@alchemy.run/cloudflare";
 import * as Provider from "alchemy/Provider";
-import { CloudflareApiLive } from "alchemy/Cloudflare";
 import * as Layer from "effect/Layer";
 import { Repository, RepositoryProvider } from "./Repository.ts";
 import { Secret, SecretProvider } from "./Secret.ts";

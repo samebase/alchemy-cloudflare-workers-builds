@@ -1,3 +1,12 @@
 allowBuilds:
   esbuild: true
   workerd: false
+# Vite+ runs the tests with its own vitest. One vite and one vitest for every
+# package, so @alchemy.run/test and @effect/vitest use the same vitest.
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@1.3.0
+  vitest: 5.0.5
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest

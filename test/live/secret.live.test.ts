@@ -7,9 +7,9 @@
 // The temporary Worker is named tmp-alchemy-workers-builds-secret-*. The test
 // never prints a secret value: the list holds names only.
 import { randomBytes } from "node:crypto";
+import * as Test from "@alchemy.run/test/Vitest";
 import { fromApiToken } from "@distilled.cloud/cloudflare/Credentials";
 import * as workers from "@distilled.cloud/cloudflare/workers";
-import * as Test from "alchemy/Test/Vitest";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
@@ -25,7 +25,7 @@ const { test } = Test.make({ providers: WorkersBuilds.providers() });
 
 /** Direct API access for the read-back, outside the engine. */
 const api = Layer.mergeAll(
-  fromApiToken({ apiToken: process.env["CLOUDFLARE_API_TOKEN"] ?? "" }),
+  fromApiToken({ apiToken: Redacted.make(process.env["CLOUDFLARE_API_TOKEN"] ?? "") }),
   FetchHttpClient.layer,
 );
 

@@ -58,7 +58,7 @@ const success = (result: unknown) => ({ success: true, errors: [], messages: [],
 const serve = (status: number, body: unknown) => {
   const requests: HttpClientRequest.HttpClientRequest[] = [];
   const layer = Layer.mergeAll(
-    fromApiToken({ apiToken: "test-token" }),
+    fromApiToken({ apiToken: Redacted.make("test-token") }),
     Layer.succeed(
       HttpClient.HttpClient,
       HttpClient.make((request) => {

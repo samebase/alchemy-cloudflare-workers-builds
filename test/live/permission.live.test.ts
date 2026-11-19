@@ -2,7 +2,7 @@
 // token: a plan through the Alchemy engine sends a placeholder token to the
 // Cloudflare API, which refuses the first read. Runs only with
 // ALCHEMY_WORKERS_BUILDS_LIVE=1, because it needs the network.
-import * as Test from "alchemy/Test/Vitest";
+import * as Test from "@alchemy.run/test/Vitest";
 import * as Effect from "effect/Effect";
 import { expect } from "vitest";
 import * as WorkersBuilds from "../../src/index.ts";

@@ -1,7 +1,7 @@
 # AGENTS.md
 
 `@samebase/alchemy-cloudflare-workers-builds` is a community Alchemy v2 provider for Cloudflare
-Workers that Workers Builds deploys. It is pinned to `alchemy@2.0.0-beta.80` and Effect 4.
+Workers that Workers Builds deploys. It is pinned to `alchemy@2.0.0-beta.87` and Effect 4.1.
 
 ## Ownership rule
 

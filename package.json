@@ -1,6 +1,6 @@
 {
   "name": "@samebase/alchemy-cloudflare-workers-builds",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Alchemy v2 resources for Cloudflare Workers Builds: a Worker whose code Workers Builds deploys, the repository connection, the triggers, the build variables, and the Worker secrets.",
   "keywords": [
     "alchemy",
@@ -48,24 +48,29 @@
     "prepare": "vp config --no-agent"
   },
   "dependencies": {
-    "@distilled.cloud/cloudflare": "1.0.0-rc.13"
+    "@distilled.cloud/cloudflare": "1.0.0-rc.20"
   },
   "devDependencies": {
+    "@alchemy.run/cloudflare": "2.0.0-beta.87",
+    "@alchemy.run/github": "2.0.0-beta.87",
+    "@alchemy.run/test": "2.0.0-beta.87",
     "@arethetypeswrong/core": "^0.18.5",
-    "@effect/platform-node": "4.0.0",
-    "@effect/vitest": "4.0.0",
+    "@effect/platform-node": "4.1.4",
+    "@effect/vitest": "4.1.4",
     "@types/node": "^24.0.0",
-    "alchemy": "2.0.0-beta.80",
-    "effect": "4.0.0",
+    "alchemy": "2.0.0-beta.87",
+    "effect": "4.1.4",
     "publint": "^0.3.25",
     "typescript": "^5.9.0",
-    "vite-plus": "0.3.0",
-    "vitest": "^4.0.0"
+    "vite-plus": "1.3.0",
+    "vitest": "5.0.5"
   },
   "peerDependencies": {
-    "@effect/platform-node": "^4.0.0",
-    "alchemy": "2.0.0-beta.80",
-    "effect": "^4.0.0"
+    "@alchemy.run/cloudflare": "2.0.0-beta.87",
+    "@alchemy.run/github": "2.0.0-beta.87",
+    "@effect/platform-node": "^4.1.4",
+    "alchemy": "2.0.0-beta.87",
+    "effect": "^4.1.4"
   },
   "engines": {
     "node": ">=22"

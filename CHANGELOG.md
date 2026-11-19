@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.6.0
+
+The package now uses Alchemy `2.0.0-beta.87` and Effect 4.1.4. The resources do not change.
+
+- Alchemy moved its Cloudflare and GitHub modules to their own packages. `alchemy/Cloudflare` is
+  now `@alchemy.run/cloudflare`, and `alchemy/GitHub` is now `@alchemy.run/github`. Both are new
+  peer dependencies at `2.0.0-beta.87`. Import `Cloudflare.providers()` from
+  `@alchemy.run/cloudflare` in your stack file.
+- The peer dependencies are `alchemy@2.0.0-beta.87`, `effect@^4.1.4`, and
+  `@effect/platform-node@^4.1.4`.
+- `@distilled.cloud/cloudflare` is now `1.0.0-rc.20`, the version that
+  `@alchemy.run/cloudflare@2.0.0-beta.87` uses. This version returns the lists of build tokens and
+  build triggers without a schema, so `WorkersBuilds.Repository` reads them with its own schema.
+  It reads the same fields as before.
+
+Upgrade:
+
+```sh
+pnpm add -D @samebase/alchemy-cloudflare-workers-builds@0.6.0 alchemy@2.0.0-beta.87 @alchemy.run/cloudflare@2.0.0-beta.87 @alchemy.run/github@2.0.0-beta.87 effect@^4.1.4 @effect/platform-node@^4.1.4
+```
+
 ## 0.5.0
 
 `WorkersBuilds.Repository` is no longer replaced for the same Worker, and drift detection sees the

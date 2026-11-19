@@ -14,6 +14,7 @@
 // repository. Only another Worker or account, which is another configuration,
 // is a replacement: then the order is safe, and Alchemy keeps the removal
 // policy and tracks both configurations until it deletes the old one.
+import { GitHubEnv } from "@alchemy.run/github";
 import { Credentials } from "@distilled.cloud/cloudflare/Credentials";
 import * as user from "@distilled.cloud/cloudflare/user";
 import * as workersBuilds from "@distilled.cloud/cloudflare/workers_builds";
@@ -27,7 +28,6 @@ import {
   type ReplaceDiff,
   type UpdateDiff,
 } from "alchemy/Diff";
-import { GitHubEnv } from "alchemy/GitHub";
 import * as Provider from "alchemy/Provider";
 import { StackName } from "alchemy/Stack";
 import * as Config from "effect/Config";
@@ -252,6 +252,59 @@ export const WorkerBuilds = Schema.Struct({
   previews_base_config: BuildSettingsResult,
 });
 export type WorkerBuilds = typeof WorkerBuilds.Type;
+
+const nullableString = Schema.optional(Schema.NullOr(Schema.String));
+
+/**
+ * The fields of GET /builds/tokens items that the provider reads. The
+ * distilled `listTokens` returns the items as Cloudflare sends them, without
+ * a schema.
+ */
+export const BuildToken = Schema.Struct({
+  buildTokenName: nullableString,
+  buildTokenUuid: nullableString,
+}).pipe(
+  Schema.encodeKeys({ buildTokenName: "build_token_name", buildTokenUuid: "build_token_uuid" }),
+);
+export type BuildToken = typeof BuildToken.Type;
+
+/**
+ * The fields of GET /builds/workers/{script_tag}/triggers items that the
+ * provider reads. The distilled `listTriggers` returns the items as
+ * Cloudflare sends them, without a schema.
+ */
+export const BuildTrigger = Schema.Struct({
+  triggerUuid: nullableString,
+  deletedOn: nullableString,
+  repoConnection: Schema.optional(
+    Schema.NullOr(
+      Schema.Struct({ repoConnectionUuid: nullableString }).pipe(
+        Schema.encodeKeys({ repoConnectionUuid: "repo_connection_uuid" }),
+      ),
+    ),
+  ),
+}).pipe(
+  Schema.encodeKeys({
+    triggerUuid: "trigger_uuid",
+    deletedOn: "deleted_on",
+    repoConnection: "repo_connection",
+  }),
+);
+export type BuildTrigger = typeof BuildTrigger.Type;
+
+/** Decodes the result of a distilled call that has no result schema. */
+const decodeList =
+  <A>(operation: string, item: Schema.Decoder<A>) =>
+  (result: unknown) =>
+    Schema.decodeUnknownEffect(Schema.Array(item))(result).pipe(
+      Effect.mapError(
+        (issue) =>
+          new WorkersBuildsError({
+            operation,
+            message: `${operation}: unexpected result: ${issue.message}`,
+          }),
+      ),
+    );
 
 /**
  * The fields of GET https://api.github.com/repos/{owner}/{name} that the
@@ -486,9 +539,7 @@ export const diffRepository = (input: {
 };
 
 /** Sorted like the Samebase token picker: name descending, then uuid. */
-export const selectBuildToken = (
-  tokens: readonly workersBuilds.ListTokensResultItem[],
-): string | undefined =>
+export const selectBuildToken = (tokens: readonly BuildToken[]): string | undefined =>
   tokens
     .flatMap((token) =>
       token.buildTokenUuid
@@ -507,7 +558,7 @@ export const selectBuildToken = (
     )[0]?.uuid;
 
 /** Active triggers and their repository connection, in a stable order. */
-export const triggerAttributes = (triggers: readonly workersBuilds.ListTriggersResultItem[]) => {
+export const triggerAttributes = (triggers: readonly BuildTrigger[]) => {
   const active = triggers
     .flatMap((trigger) =>
       trigger.triggerUuid && !trigger.deletedOn
@@ -746,6 +797,7 @@ const listTriggers = (accountId: string, scriptTag: string) =>
   workersBuilds.listTriggers({ accountId, externalScriptId: scriptTag }).pipe(
     Effect.catchIf(isNotFound, () => Effect.succeed([])),
     refused("list build triggers"),
+    Effect.flatMap(decodeList("list build triggers", BuildTrigger)),
   );
 
 /** The repository of a configuration, with the GitHub ids that Workers Builds keeps as strings. */
@@ -801,11 +853,14 @@ export const resolveBuildToken = (accountId: string, buildToken: string | undefi
 
 const firstBuildToken = (accountId: string) =>
   Effect.gen(function* () {
-    const tokens: workersBuilds.ListTokensResultItem[] = [];
+    const tokens: BuildToken[] = [];
     for (let page = 1; ; page += 1) {
       const batch = yield* workersBuilds
         .listTokens({ accountId, page, perPage: BUILD_TOKEN_PAGE_SIZE })
-        .pipe(refused("list build tokens"));
+        .pipe(
+          refused("list build tokens"),
+          Effect.flatMap(decodeList("list build tokens", BuildToken)),
+        );
       tokens.push(...batch);
       if (batch.length < BUILD_TOKEN_PAGE_SIZE) break;
     }
